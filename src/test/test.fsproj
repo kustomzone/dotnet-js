@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <DefineConstants>$(DefineConstants);DOTNET_FILE_SYSTEM</DefineConstants>
+    <DefineConstants>$(DefineConstants);USE_DOTNET40_BINARIES</DefineConstants>
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../FSharp.Compiler.Service_fable/fcs/fcs-fable/fcs-fable.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="app.fs"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- <PackageReference Include="FSharp.Core" Version="4.2.*" /> -->
+    <!-- <PackageReference Include="Fable.Core" Version="1.2.*" /> -->
+    <!-- <DotNetCliToolReference Include="dotnet-fable" Version="1.2.*" /> -->
+  </ItemGroup>
+
+  <Target Name="CopyToBuiltBin" AfterTargets="Build">
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="../../wwwroot/bin" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyToBuiltBin2" AfterTargets="Build">
+    <Copy SourceFiles="$(OutputPath)fcs-fable.dll" DestinationFolder="../../wwwroot/bin" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
