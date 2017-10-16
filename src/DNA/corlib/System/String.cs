@@ -746,13 +746,26 @@ namespace System {
 		#region Parsing
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern internal int InternalToInt32(out int error);
+		extern internal static string InternalFromInt32(int value);
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern internal long InternalToInt64(out int error);
+		extern internal static string InternalFromInt64(long value);
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern internal uint InternalToUInt32(out int error);
+		extern internal static string InternalFromUInt32(uint value);
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		extern internal ulong InternalToUInt64(out int error);
+		extern internal static string InternalFromUInt64(ulong value);
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		extern internal static string InternalFromSingle(float value);
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		extern internal static string InternalFromDouble(double value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		extern internal int InternalToInt32(out int error, int radix);
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		extern internal long InternalToInt64(out int error, int radix);
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		extern internal uint InternalToUInt32(out int error, int radix);
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		extern internal ulong InternalToUInt64(out int error, int radix);
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		extern internal float InternalToSingle(out int error);
 		[MethodImpl(MethodImplOptions.InternalCall)]

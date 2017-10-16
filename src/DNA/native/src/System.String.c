@@ -241,21 +241,18 @@ tAsyncCall* System_String_Equals(PTR pThis_, PTR pParams, PTR pReturnValue) {
 
 tAsyncCall* System_String_GetHashCode(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
-	CHAR2 *pChar, *pEnd;
-	I32 hash;
-	
-	hash = 0;
-	pChar = pThis->chars;
-	pEnd = pChar + pThis->length - 1;
+	I32 hash1 = 5381;
+	I32 hash2 = hash1;
+	CHAR2 *pChar = pThis->chars;
+	CHAR2 *pEnd = pChar + pThis->length - 1;
 	for (; pChar < pEnd; pChar += 2) {
-		hash = (hash << 5) - hash + pChar[0];
-		hash = (hash << 5) - hash + pChar[1];
+		hash1 = ((hash1 << 5) + hash1) ^ pChar[0];
+		hash2 = ((hash2 << 5) + hash2) ^ pChar[1];
 	}
 	if (pChar <= pEnd) {
-		hash = (hash << 5) - hash + pChar[0];
+		hash1 = ((hash1 << 5) + hash1) ^ pChar[0];
 	}
-	*(I32*)pReturnValue = hash;
-
+	*(I32*)pReturnValue = hash1 + (hash2 * 1566083941);
 	return NULL;
 }
 
@@ -395,7 +392,7 @@ tAsyncCall* System_String_InternalIndexOfStr(PTR pThis_, PTR pParams, PTR pRetur
 	U32 byteLen = pValue->length << 1;
 
 	for (I32 i = fromIndex; i != lastIndex; i += inc) {
-		if (memcmp(pThis->chars + i, pValue->chars, byteLen) == 0) {
+		if (memcmp(&pThis->chars[i], pValue->chars, byteLen) == 0) {
 			*(I32*)pReturnValue = i;
 			return NULL;
 		}
@@ -455,12 +452,55 @@ U32 SystemString_GetNumBytes(HEAP_PTR pThis_) {
 	return ((pThis->length + 1) << 1) + sizeof(tSystemString);
 }
 
+tAsyncCall* System_String_InternalFromInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	CHAR2 buf[30];
+	swprintf_s((wchar_t*)buf, sizeof(buf)/sizeof(buf[0]), L"%d", INTERNALCALL_PARAM(0, I32));
+	*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16(buf);
+	return NULL;
+}
+
+tAsyncCall* System_String_InternalFromInt64(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	CHAR2 buf[30];
+	swprintf_s((wchar_t*)buf, sizeof(buf) / sizeof(buf[0]), L"%lld", INTERNALCALL_PARAM(0, I64));
+	*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16(buf);
+	return NULL;
+}
+
+tAsyncCall* System_String_InternalFromUInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	CHAR2 buf[30];
+	swprintf_s((wchar_t*)buf, sizeof(buf) / sizeof(buf[0]), L"%u", INTERNALCALL_PARAM(0, U32));
+	*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16(buf);
+	return NULL;
+}
+
+tAsyncCall* System_String_InternalFromUInt64(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	CHAR2 buf[30];
+	swprintf_s((wchar_t*)buf, sizeof(buf) / sizeof(buf[0]), L"%llu", INTERNALCALL_PARAM(0, U64));
+	*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16(buf);
+	return NULL;
+}
+
+tAsyncCall* System_String_InternalFromSingle(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	CHAR2 buf[30];
+	swprintf_s((wchar_t*)buf, sizeof(buf) / sizeof(buf[0]), L"%.7G", INTERNALCALL_PARAM(0, float));
+	*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16(buf);
+	return NULL;
+}
+
+tAsyncCall* System_String_InternalFromDouble(PTR pThis_, PTR pParams, PTR pReturnValue) {
+	CHAR2 buf[30];
+	swprintf_s((wchar_t*)buf, sizeof(buf) / sizeof(buf[0]), L"%.15G", INTERNALCALL_PARAM(0, double));
+	*(HEAP_PTR*)pReturnValue = SystemString_FromCharPtrUTF16(buf);
+	return NULL;
+}
+
 tAsyncCall* System_String_InternalToInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U32 *pError = ((U32**)pParams)[0];
+	I32 radix = ((I32*)pParams)[1];
 	wchar_t *end, *str = (wchar_t *)pThis->chars;
 	errno = 0;
-	I32 ret = wcstol(str, &end, 0);
+	I32 ret = wcstol(str, &end, radix);
 	*pError = end != (str + pThis->length) || (ret == 0 && errno != 0);
 	*(I32*)pReturnValue = ret;
 	return NULL;
@@ -469,9 +509,10 @@ tAsyncCall* System_String_InternalToInt32(PTR pThis_, PTR pParams, PTR pReturnVa
 tAsyncCall* System_String_InternalToInt64(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U32 *pError = ((U32**)pParams)[0];
+	I32 radix = ((I32*)pParams)[1];
 	wchar_t *end, *str = (wchar_t *)pThis->chars;
 	errno = 0;
-	I64 ret = wcstoll(str, &end, 0);
+	I64 ret = wcstoll(str, &end, radix);
 	*pError = end != (str + pThis->length) || (ret == 0 && errno != 0);
 	*(I64*)pReturnValue = ret;
 	return NULL;
@@ -480,9 +521,10 @@ tAsyncCall* System_String_InternalToInt64(PTR pThis_, PTR pParams, PTR pReturnVa
 tAsyncCall* System_String_InternalToUInt32(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U32 *pError = ((U32**)pParams)[0];
+	I32 radix = ((I32*)pParams)[1];
 	wchar_t *end, *str = (wchar_t *)pThis->chars;
 	errno = 0;
-	U32 ret = wcstoul(str, &end, 0);
+	U32 ret = wcstoul(str, &end, radix);
 	*pError = end != (str + pThis->length) || (ret == 0 && errno != 0);
 	*(U32*)pReturnValue = ret;
 	return NULL;
@@ -491,9 +533,10 @@ tAsyncCall* System_String_InternalToUInt32(PTR pThis_, PTR pParams, PTR pReturnV
 tAsyncCall* System_String_InternalToUInt64(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *pThis = (tSystemString*)pThis_;
 	U32 *pError = ((U32**)pParams)[0];
+	I32 radix = ((I32*)pParams)[1];
 	wchar_t *end, *str = (wchar_t *)pThis->chars;
 	errno = 0;
-	U64 ret = wcstoull(str, &end, 0);
+	U64 ret = wcstoull(str, &end, radix);
 	*pError = end != (str + pThis->length) || (ret == 0 && errno != 0);
 	*(U64*)pReturnValue = ret;
 	return NULL;

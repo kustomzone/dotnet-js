@@ -181,9 +181,10 @@ let main argv =
         let bench i =
             let sourceText = sourceText + " //" + (string i) // just so it's a bit different every time
             let elapsed, (parseResults, typeCheckResults, projectResults) = measureTime parseAndCheck sourceText
-            if Array.length parseResults.Errors > 0 then printfn "Errors: %A" parseResults.Errors
-            if Array.length typeCheckResults.Errors > 0 then printfn "Errors: %A" typeCheckResults.Errors
-            printfn "iteration %d, elapsed: %d ms" i elapsed
+            // if Array.length parseResults.Errors > 0 then printfn "Errors: %A" parseResults.Errors
+            // if Array.length typeCheckResults.Errors > 0 then printfn "Errors: %A" typeCheckResults.Errors
+            //printfn "iteration %d, elapsed: %d ms" i elapsed
+            System.Console.WriteLine("iteration {0}, elapsed: {1} ms", i, elapsed)
         [1..10] |> List.iter bench
         let endTime = System.DateTime.UtcNow
         let elapsed = int64 (endTime - startTime).TotalMilliseconds

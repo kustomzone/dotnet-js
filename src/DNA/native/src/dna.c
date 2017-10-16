@@ -81,7 +81,7 @@ void Diag_Print() {
 //#define SORT_BY_LOCALS_STACK // sort by method locals stack size
 //#define SORT_BY_EVAL_STACK   // sort by method eval stack size
 	{
-		tMD_MethodDef* topMethods[50]; // change top number if needed
+		tMD_MethodDef* topMethods[50]; // increase if needed
 		U32 numTop = sizeof(topMethods) / sizeof(topMethods[0]);
 		for (U32 t = 0; t < numTop; t++) { topMethods[t] = NULL; }
 
