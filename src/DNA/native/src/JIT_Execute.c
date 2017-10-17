@@ -323,6 +323,11 @@ U32 JIT_Execute(tThread *pThread, U32 numInst) {
 goNext:
 	CHECK_FOR_BREAKPOINT();
 	op = GET_OP();
+
+	I32 n = sizeof(callBuffer) - (pNextChar - callBuffer); // space left in buffer
+	I32 c = snprintf(pNextChar, n, "JIT op: 0x%03x (%s)\n", op, Sys_JIT_OpCodeName(op));
+	pNextChar = (c >= 0 && c < n && (n - c) > 200) ? pNextChar + c : callBuffer; // circular buffer
+
 	switch (op) {
 
 #else
@@ -1107,6 +1112,12 @@ JIT_CALL_NATIVE_start:
 		// Internal constructors MUST leave the newly created object in the return value
 		// (ie on top of the evaluation stack)
 		pAsync = pCallNative->fn(pThis, pCurrentMethodState->pParamsLocals + thisOfs, pCurrentMethodState->pEvalStack);
+		if (pCallNative->pMethodDef->pReturnType != NULL) {
+			PUSH(pCallNative->pMethodDef->pReturnType->stackSize);
+		} else if (pCurrentMethodState->isInternalNewObjCall) {
+			PUSH(sizeof(PTR));
+		}
+
 		if (pAsync != NULL) {
 			// Save the method state
 			SAVE_METHOD_STATE();
@@ -1142,13 +1153,13 @@ JIT_RETURN_start:
 	if (pCurrentMethodState->pMethod->pReturnType != NULL) {
 		u32Value = pCurrentMethodState->pMethod->pReturnType->stackSize;
 	} else if (pCurrentMethodState->isInternalNewObjCall) {
-		u32Value = sizeof(void*);
+		u32Value = sizeof(PTR);
 	} else {
 		u32Value = 0;
 	}
 	{
-		PTR pMem = max(pCurEvalStack - u32Value, pCurrentMethodState->pEvalStack);
-		//Assert(pMem >= pCurrentMethodState->pEvalStack);
+		Assert(pCurEvalStack - u32Value >= pCurrentMethodState->pEvalStack);
+		PTR pMem = pCurEvalStack - u32Value;
 		tMethodState *pOldMethodState = pCurrentMethodState;
 		pThread->pCurrentMethodState = pCurrentMethodState->pCaller;
 		LOAD_METHOD_STATE();

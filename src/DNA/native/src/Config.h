@@ -31,7 +31,7 @@
 //#define DIAG_METHOD_CALLS
 
 // Maintain and print a callstack buffer
-//#define DIAG_CALL_STACK
+#define DIAG_CALL_STACK
 
 // Measure how much time is spent in each .NET opcode
 // This only works on Windows
@@ -78,6 +78,6 @@
 //#endif
 
 // disable GC completely (for perf testing/tuning)
-//#define NO_GC_WHATSOEVER
+#define NO_GC_WHATSOEVER
 
 #endif
