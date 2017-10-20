@@ -324,9 +324,11 @@ goNext:
 	CHECK_FOR_BREAKPOINT();
 	op = GET_OP();
 
-	I32 n = sizeof(callBuffer) - (pNextChar - callBuffer); // space left in buffer
-	I32 c = snprintf(pNextChar, n, "JIT op: 0x%03x (%s)\n", op, Sys_JIT_OpCodeName(op));
-	pNextChar = (c >= 0 && c < n && (n - c) > 200) ? pNextChar + c : callBuffer; // circular buffer
+//#if _DEBUG
+//	I32 n = sizeof(callBuffer) - (pNextChar - callBuffer); // space left in buffer
+//	I32 c = snprintf(pNextChar, n, "JIT op: 0x%03x (%s)\n", op, Sys_JIT_OpCodeName(op));
+//	pNextChar = (c >= 0 && c < n && (n - c) > 200) ? pNextChar + c : callBuffer; // circular buffer
+//#endif
 
 	switch (op) {
 
@@ -1238,6 +1240,7 @@ JIT_INVOKE_SYSTEM_REFLECTION_METHODBASE_start:
 
 		// Take the MethodBase.Invoke params off the stack.
 		POP(pInvokeMethod->parameterStackSize);
+		Assert(pCurEvalStack >= pCurrentMethodState->pEvalStack);
 
 		// Get a pointer to the MethodBase instance (e.g., a MethodInfo or ConstructorInfo),
 		// and from that, determine which method we're going to invoke
@@ -2689,6 +2692,10 @@ JIT_NEWOBJECT_start:
 			// Need to set this to something non-NULL so that CreateParameters() works properly
 			obj = (HEAP_PTR)-1;
 		}
+
+#ifdef DIAG_METHOD_CALLS
+		pCurrentMethodState->pMethod->heapAlloc++;
+#endif
 
 		// Set up the new method state for the called method
 		pCallMethodState = MethodState_Direct(pThread, pConstructorDef, pCurrentMethodState, isInternalConstructor);

@@ -133,8 +133,8 @@ tAsyncCall* System_String_get_Chars(PTR pThis_, PTR pParams, PTR pReturnValue) {
 tAsyncCall* System_String_InternalConcat(PTR pThis_, PTR pParams, PTR pReturnValue) {
 	tSystemString *s0, *s1, *ret;
 
-	s0 = (tSystemString*)(((HEAP_PTR*)pParams)[0]);
-	s1 = (tSystemString*)(((HEAP_PTR*)pParams)[1]);
+	s0 = ((tSystemString**)pParams)[0];
+	s1 = ((tSystemString**)pParams)[1];
 	ret = CreateStringHeapObj(s0->length + s1->length);
 	memcpy(ret->chars, s0->chars, s0->length << 1);
 	memcpy(&ret->chars[s0->length], s1->chars, s1->length << 1);
