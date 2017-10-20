@@ -8,9 +8,9 @@
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <ProjectReference Include="../../../FSharp.Compiler.Service_fable/fcs/fcs-fable/fcs-fable.fsproj" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <ItemGroup>
     <Compile Include="app.fs"/>
@@ -25,8 +25,8 @@
   <Target Name="CopyToBuiltBin" AfterTargets="Build">
     <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="../../wwwroot/bin" SkipUnchangedFiles="true" />
   </Target>
-  <Target Name="CopyToBuiltBin2" AfterTargets="Build">
+  <!-- <Target Name="CopyToBuiltBin2" AfterTargets="Build">
     <Copy SourceFiles="$(OutputPath)fcs-fable.dll" DestinationFolder="../../wwwroot/bin" SkipUnchangedFiles="true" />
-  </Target>
+  </Target> -->
 
 </Project>
